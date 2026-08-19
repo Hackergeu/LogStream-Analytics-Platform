@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package com.logstream.backend.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.logstream.backend.grpc";
+
+// A single log entry sent from a microservice to LogStream
+message LogMessage {
+  string log_id = 1;         // unique identifier for this log line
+  int64 timestamp = 2;       // epoch millis, when the log was generated
+  string level = 3;          // e.g. INFO, WARN, ERROR
+  string service = 4;        // e.g. "billing-api", "auth-service"
+  string message = 5;        // the actual log text
+  int32 response_time_ms = 6; // how long the request took, if applicable
+}
+
+// Response sent back after ingesting a log
+message IngestAck {
+  bool success = 1;
+  string log_id = 2;
+}
+
+// The gRPC service microservices call to push logs in
+service LogIngestionService {
+  rpc IngestLog (LogMessage) returns (IngestAck);
+}
