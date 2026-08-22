@@ -1,6 +1,9 @@
 package com.logstream.backend.search;
 
+import org.apache.lucene.analysis.Analyzer;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -15,16 +18,23 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
 public class LogSearchService {
 
     private static final String INDEX_DIR = "lucene-index";
+
+    // Fields that must match EXACTLY (case-sensitive, no tokenizing) — level, service, log_id
+    // Everything else (like "message") falls back to StandardAnalyzer for full-text search
+    private Analyzer buildQueryAnalyzer() {
+        Map<String, Analyzer> perFieldAnalyzers = new HashMap<>();
+        perFieldAnalyzers.put("level", new KeywordAnalyzer());
+        perFieldAnalyzers.put("service", new KeywordAnalyzer());
+        perFieldAnalyzers.put("log_id", new KeywordAnalyzer());
+        return new PerFieldAnalyzerWrapper(new StandardAnalyzer(), perFieldAnalyzers);
+    }
 
     public List<Map<String, String>> search(String queryString, int maxResults) throws Exception {
         List<Map<String, String>> results = new ArrayList<>();
@@ -34,8 +44,7 @@ public class LogSearchService {
 
             IndexSearcher searcher = new IndexSearcher(reader);
 
-            // "message" is the default field searched if the user doesn't specify one
-            QueryParser parser = new QueryParser("message", new StandardAnalyzer());
+            QueryParser parser = new QueryParser("message", buildQueryAnalyzer());
             Query query = parser.parse(queryString);
 
             TopDocs topDocs = searcher.search(query, maxResults);
