@@ -44,7 +44,7 @@ public class LogSearchService {
 
             IndexSearcher searcher = new IndexSearcher(reader);
 
-            QueryParser parser = new QueryParser("message", buildQueryAnalyzer());
+            LogQueryParser parser = new LogQueryParser("message", buildQueryAnalyzer());
             Query query = parser.parse(queryString);
 
             TopDocs topDocs = searcher.search(query, maxResults);

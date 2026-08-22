@@ -36,20 +36,20 @@ public class LogIndexService {
     public void indexLog(LogMessage logMessage) throws IOException {
         Document doc = new Document();
 
-        // StringField = exact match, not tokenized (good for IDs, levels, service names)
         doc.add(new StringField("log_id", logMessage.getLogId(), Field.Store.YES));
         doc.add(new StringField("level", logMessage.getLevel(), Field.Store.YES));
         doc.add(new StringField("service", logMessage.getService(), Field.Store.YES));
-
-        // TextField = tokenized/analyzed, good for full-text search on the message
         doc.add(new TextField("message", logMessage.getMessage(), Field.Store.YES));
 
-        // Numeric fields for range queries (response_time > 1000, timestamp ranges)
-        doc.add(new LongField("timestamp", logMessage.getTimestamp(), Field.Store.YES));
-        doc.add(new IntField("response_time_ms", logMessage.getResponseTimeMs(), Field.Store.YES));
+        // Numeric fields: Point type for range-query searching, StoredField for retrieval
+        doc.add(new LongPoint("timestamp", logMessage.getTimestamp()));
+        doc.add(new StoredField("timestamp", logMessage.getTimestamp()));
+
+        doc.add(new IntPoint("response_time_ms", logMessage.getResponseTimeMs()));
+        doc.add(new StoredField("response_time_ms", logMessage.getResponseTimeMs()));
 
         indexWriter.addDocument(doc);
-        indexWriter.commit(); // flush to disk so it's immediately searchable
+        indexWriter.commit();
 
         log.info("Indexed log_id={} into Lucene", logMessage.getLogId());
     }
