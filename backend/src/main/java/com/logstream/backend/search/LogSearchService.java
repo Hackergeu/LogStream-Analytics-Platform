@@ -6,6 +6,7 @@ import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
@@ -15,6 +16,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.springframework.stereotype.Service;
+import java.util.TreeMap;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -64,5 +66,31 @@ public class LogSearchService {
         }
 
         return results;
+    }
+
+    public Map<Long, Long> getLogCountsByMinute(long fromEpochMillis, long toEpochMillis) throws IOException {
+        Map<Long, Long> buckets = new TreeMap<>(); // TreeMap keeps buckets sorted by time
+
+        try (Directory directory = FSDirectory.open(Path.of(INDEX_DIR));
+             DirectoryReader reader = DirectoryReader.open(directory)) {
+
+            IndexSearcher searcher = new IndexSearcher(reader);
+            Query rangeQuery = LongPoint.newRangeQuery("timestamp", fromEpochMillis, toEpochMillis);
+
+            TopDocs topDocs = searcher.search(rangeQuery, Integer.MAX_VALUE);
+            log.info("Aggregation query matched {} documents", topDocs.totalHits.value);
+
+            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                Document doc = searcher.storedFields().document(scoreDoc.doc);
+                long timestamp = Long.parseLong(doc.get("timestamp"));
+
+                // Round down to the nearest minute (60,000 ms) to create the bucket key
+                long minuteBucket = (timestamp / 60000) * 60000;
+
+                buckets.merge(minuteBucket, 1L, Long::sum);
+            }
+        }
+
+        return buckets;
     }
 }

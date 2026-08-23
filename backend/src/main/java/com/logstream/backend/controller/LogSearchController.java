@@ -21,4 +21,13 @@ public class LogSearchController {
             @RequestParam(defaultValue = "50") int limit) throws Exception {
         return logSearchService.search(q, limit);
     }
+
+    @GetMapping("/api/logs/timeseries")
+    public Map<Long, Long> getTimeSeries(
+            @RequestParam(required = false) Long from,
+            @RequestParam(required = false) Long to) throws Exception {
+        long toTime = (to != null) ? to : System.currentTimeMillis();
+        long fromTime = (from != null) ? from : toTime - (60 * 60 * 1000); // default: last hour
+        return logSearchService.getLogCountsByMinute(fromTime, toTime);
+    }
 }
