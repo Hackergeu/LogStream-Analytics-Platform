@@ -2,6 +2,8 @@ import { useState } from 'react';
 import SearchBar from './components/SearchBar';
 import VolumeChart from './components/VolumeChart';
 import ResultsTable from './components/ResultsTable';
+import LogGenerator from './components/LogGenerator';
+import AlertsPanel from './components/AlertsPanel';
 import './App.css';
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
       </header>
 
       <main className="content">
+          <LogGenerator />
+          <AlertsPanel />
         <section className="chart-section">
           <h2>Log Volume</h2>
           <VolumeChart timeSeries={timeSeries} />

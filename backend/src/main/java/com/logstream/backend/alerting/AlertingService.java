@@ -16,8 +16,9 @@ public class AlertingService {
 
     private final LogSearchService logSearchService;
 
-    // Thread-safe list for scheduler reads and REST API writes
     private final List<AlertRule> rules = new CopyOnWriteArrayList<>();
+    private final List<TriggeredAlert> triggeredAlerts = new CopyOnWriteArrayList<>();
+    private static final int MAX_TRIGGERED_HISTORY = 50;
 
     public void addRule(AlertRule rule) {
         rules.add(rule);
@@ -28,46 +29,40 @@ public class AlertingService {
         return rules;
     }
 
-    @Scheduled(fixedRate = 60000) // Runs every 60 seconds
-    public void evaluateRules() {
+    public List<TriggeredAlert> getTriggeredAlerts() {
+        return triggeredAlerts;
+    }
 
-        if (rules.isEmpty()) {
-            return;
-        }
+    @Scheduled(fixedRate = 60000)
+    public void evaluateRules() {
+        if (rules.isEmpty()) return;
 
         for (AlertRule rule : rules) {
             try {
                 long windowMillis = rule.getWindowMinutes() * 60 * 1000;
-
-                long count = logSearchService.countMatchingInWindow(
-                        rule.getQuery(),
-                        windowMillis
-                );
+                long count = logSearchService.countMatchingInWindow(rule.getQuery(), windowMillis);
 
                 if (count >= rule.getThresholdCount()) {
                     triggerAlert(rule, count);
                 }
-
             } catch (Exception e) {
-                log.error(
-                        "Failed to evaluate alert rule '{}'",
-                        rule.getName(),
-                        e
-                );
+                log.error("Failed to evaluate alert rule '{}'", rule.getName(), e);
             }
         }
     }
 
     private void triggerAlert(AlertRule rule, long actualCount) {
+        log.warn("🚨 ALERT TRIGGERED: '{}' — {} matches (threshold: {}) for query [{}]",
+                rule.getName(), actualCount, rule.getThresholdCount(), rule.getQuery());
 
-        // Currently simulating an alert by writing it to the application logs.
-        // Later, this can be replaced with Slack/PagerDuty/webhook integration.
-        log.warn(
-                "🚨 ALERT TRIGGERED: '{}' — {} matches (threshold: {}) for query [{}]",
-                rule.getName(),
-                actualCount,
-                rule.getThresholdCount(),
-                rule.getQuery()
+        TriggeredAlert event = new TriggeredAlert(
+                rule.getName(), rule.getQuery(), actualCount, rule.getThresholdCount(), System.currentTimeMillis()
         );
+        triggeredAlerts.add(0, event); // newest first
+
+        // keep the list bounded so it doesn't grow forever
+        while (triggeredAlerts.size() > MAX_TRIGGERED_HISTORY) {
+            triggeredAlerts.remove(triggeredAlerts.size() - 1);
+        }
     }
 }
