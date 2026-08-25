@@ -8,7 +8,6 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -17,6 +16,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.springframework.stereotype.Service;
 import java.util.TreeMap;
+import org.apache.lucene.search.BooleanQuery; 
+import org.apache.lucene.search.BooleanClause;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -93,4 +94,24 @@ public class LogSearchService {
 
         return buckets;
     }
+    public long countMatchingInWindow(String queryString, long windowMillis) throws Exception {
+    try (Directory directory = FSDirectory.open(Path.of(INDEX_DIR));
+         DirectoryReader reader = DirectoryReader.open(directory)) {
+
+        IndexSearcher searcher = new IndexSearcher(reader);
+        LogQueryParser parser = new LogQueryParser("message", buildQueryAnalyzer());
+        Query userQuery = parser.parse(queryString);
+
+        long now = System.currentTimeMillis();
+        Query timeFilter = LongPoint.newRangeQuery("timestamp", now - windowMillis, now);
+
+        BooleanQuery combined = new BooleanQuery.Builder()
+                .add(userQuery, BooleanClause.Occur.MUST)
+                .add(timeFilter, BooleanClause.Occur.MUST)
+                .build();
+
+        TopDocs topDocs = searcher.search(combined, Integer.MAX_VALUE);
+        return topDocs.totalHits.value;
+    }
+}
 }
