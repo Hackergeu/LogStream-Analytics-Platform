@@ -172,3 +172,40 @@ body {
 .level-info { color: #4f8cff; }
 
 .empty-state { color: #6b7280; font-style: italic; }
+.livetail-section {
+  background: #161922;
+  border: 1px solid #262a35;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff6b6b;
+  margin: 0 6px 0 10px;
+}
+
+.status-dot.connected { background: #4ade80; }
+
+.livetail-list {
+  max-height: 300px;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.livetail-item {
+  display: flex;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid #1c1f28;
+}
+
+.livetail-time { color: #8a8f9c; width: 90px; flex-shrink: 0; }
+.livetail-level { width: 60px; flex-shrink: 0; font-weight: 600; }
+.livetail-service { width: 120px; flex-shrink: 0; color: #4f8cff; }
+.livetail-message { color: #e4e6eb; }

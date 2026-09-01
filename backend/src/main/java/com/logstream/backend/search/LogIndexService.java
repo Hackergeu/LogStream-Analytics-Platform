@@ -1,8 +1,10 @@
 package com.logstream.backend.search;
 
 import com.logstream.backend.grpc.LogMessage;
+import com.logstream.backend.websocket.LogBroadcaster;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
@@ -17,9 +19,12 @@ import java.nio.file.Path;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class LogIndexService {
 
     private static final String INDEX_DIR = "lucene-index";
+
+    private final LogBroadcaster logBroadcaster;
 
     private Directory directory;
     private IndexWriter indexWriter;
@@ -41,7 +46,6 @@ public class LogIndexService {
         doc.add(new StringField("service", logMessage.getService(), Field.Store.YES));
         doc.add(new TextField("message", logMessage.getMessage(), Field.Store.YES));
 
-        // Numeric fields: Point type for range-query searching, StoredField for retrieval
         doc.add(new LongPoint("timestamp", logMessage.getTimestamp()));
         doc.add(new StoredField("timestamp", logMessage.getTimestamp()));
 
@@ -52,6 +56,8 @@ public class LogIndexService {
         indexWriter.commit();
 
         log.info("Indexed log_id={} into Lucene", logMessage.getLogId());
+
+        logBroadcaster.broadcast(logMessage);
     }
 
     @PreDestroy

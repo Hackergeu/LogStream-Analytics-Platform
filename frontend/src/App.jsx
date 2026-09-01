@@ -4,6 +4,7 @@ import VolumeChart from './components/VolumeChart';
 import ResultsTable from './components/ResultsTable';
 import LogGenerator from './components/LogGenerator';
 import AlertsPanel from './components/AlertsPanel';
+import LiveTail from './components/LiveTail';
 import './App.css';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
       <main className="content">
           <LogGenerator />
           <AlertsPanel />
+          <LiveTail />
         <section className="chart-section">
           <h2>Log Volume</h2>
           <VolumeChart timeSeries={timeSeries} />
