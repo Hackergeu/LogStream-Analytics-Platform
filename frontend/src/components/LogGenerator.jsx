@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const API_BASE = 'http://localhost:8080/api/logs';
+const API_BASE = 'http://localhost:8081/api/logs';
 
 function LogGenerator() {
   const [level, setLevel] = useState('ERROR');

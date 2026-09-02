@@ -1,7 +1,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-const WS_URL = 'ws://localhost:8080/ws/logs';
+const WS_URL = 'ws://localhost:8081/ws/logs';
 const MAX_LIVE_LOGS = 20;
 
 function LiveTail() {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const API_BASE = 'http://localhost:8080/api/alerts';
+const API_BASE = 'http://localhost:8081/api/alerts';
 
 function AlertsPanel() {
   const [alerts, setAlerts] = useState([]);

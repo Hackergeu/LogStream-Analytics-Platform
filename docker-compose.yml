@@ -1,0 +1,27 @@
+services:
+
+  backend:
+    build: ./backend
+    ports:
+      - "8081:8080"
+      - "9090:9090"
+    volumes:
+      - lucene-data:/app/lucene-index
+    networks:
+      - logstream-network
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - logstream-network
+
+volumes:
+  lucene-data:
+
+networks:
+  logstream-network:
+    driver: bridge

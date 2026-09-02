@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const API_BASE = 'http://localhost:8080/api/logs';
+const API_BASE = 'http://localhost:8081/api/logs';
 
 function SearchBar({ setResults, setTimeSeries, setLoading }) {
   const [query, setQuery] = useState('*:*');
