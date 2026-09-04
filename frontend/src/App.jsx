@@ -33,7 +33,9 @@ function App() {
         </section>
 
         <section className="results-section">
-          <h2>Results {loading && '(loading...)'}</h2>
+         <h2>
+          Results {loading && <span className="loading-spinner"></span>}
+          </h2>
           <ResultsTable results={results} />
         </section>
       </main>
