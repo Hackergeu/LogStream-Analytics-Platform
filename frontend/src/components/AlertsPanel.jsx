@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { authHeaders } from '../auth';
 
 const API_BASE = 'http://localhost:8081/api/alerts';
 
@@ -8,7 +9,9 @@ function AlertsPanel() {
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
-        const res = await fetch(`${API_BASE}/triggered`);
+        const res = await fetch(`${API_BASE}/triggered`, {
+            headers:authHeaders(),
+            });
         const data = await res.json();
         setAlerts(data);
       } catch (err) {

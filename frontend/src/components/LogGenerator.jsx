@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { authHeaders } from '../auth';
 
 const API_BASE = 'http://localhost:8081/api/logs';
 
@@ -14,7 +15,7 @@ function LogGenerator() {
     try {
       const res = await fetch(`${API_BASE}/ingest`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders()},
         body: JSON.stringify({ level, service, message, responseTimeMs: String(responseTimeMs) }),
       });
       const data = await res.json();

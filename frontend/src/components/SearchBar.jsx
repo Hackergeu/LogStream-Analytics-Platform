@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { authHeaders } from '../auth';
 
 const API_BASE = 'http://localhost:8081/api/logs';
 
@@ -8,11 +9,15 @@ function SearchBar({ setResults, setTimeSeries, setLoading }) {
   const runSearch = async () => {
     setLoading(true);
     try {
-      const searchRes = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}`);
+      const searchRes = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}`, {
+          headers:authHeaders(),
+          });
       const searchData = await searchRes.json();
       setResults(searchData);
 
-      const tsRes = await fetch(`${API_BASE}/timeseries`);
+      const tsRes = await fetch(`${API_BASE}/timeseries` , {
+          headers:authHeaders() ,
+          });
       const tsData = await tsRes.json();
       setTimeSeries(tsData);
     } catch (err) {

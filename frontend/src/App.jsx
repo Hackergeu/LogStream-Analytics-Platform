@@ -1,16 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SearchBar from './components/SearchBar';
 import VolumeChart from './components/VolumeChart';
 import ResultsTable from './components/ResultsTable';
 import LogGenerator from './components/LogGenerator';
 import AlertsPanel from './components/AlertsPanel';
 import LiveTail from './components/LiveTail';
+import Login from './components/Login';
+import { getToken, clearToken } from './auth';
 import './App.css';
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(!!getToken());
   const [results, setResults] = useState([]);
   const [timeSeries, setTimeSeries] = useState({});
   const [loading, setLoading] = useState(false);
+
+  const handleLogout = () => {
+    clearToken();
+    setIsLoggedIn(false);
+  };
+
+  if (!isLoggedIn) {
+    return <Login onLoginSuccess={() => setIsLoggedIn(true)} />;
+  }
 
   return (
     <div className="app">
@@ -21,21 +33,21 @@ function App() {
           setTimeSeries={setTimeSeries}
           setLoading={setLoading}
         />
+        <button className="logout-btn" onClick={handleLogout}>Logout</button>
       </header>
 
       <main className="content">
-          <LogGenerator />
-          <AlertsPanel />
-          <LiveTail />
+        <LogGenerator />
+        <AlertsPanel />
+        <LiveTail />
+
         <section className="chart-section">
           <h2>Log Volume</h2>
           <VolumeChart timeSeries={timeSeries} />
         </section>
 
         <section className="results-section">
-         <h2>
-          Results {loading && <span className="loading-spinner"></span>}
-          </h2>
+          <h2>Results {loading && <span className="loading-spinner"></span>}</h2>
           <ResultsTable results={results} />
         </section>
       </main>
