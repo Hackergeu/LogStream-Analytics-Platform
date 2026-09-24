@@ -6,7 +6,7 @@ import LogGenerator from './components/LogGenerator';
 import AlertsPanel from './components/AlertsPanel';
 import LiveTail from './components/LiveTail';
 import Login from './components/Login';
-import { getToken, clearToken } from './auth';
+import { getToken, clearToken, getUsername } from './auth';
 import './App.css';
 
 function App() {
@@ -25,32 +25,49 @@ function App() {
   }
 
   return (
-    <div className="app">
+    <div className="app-shell">
+
       <header className="topbar">
-        <h1>LogStream</h1>
-        <SearchBar
-          setResults={setResults}
-          setTimeSeries={setTimeSeries}
-          setLoading={setLoading}
-        />
-        <button className="logout-btn" onClick={handleLogout}>Logout</button>
+        <div className="topbar-brand">
+          <span className="logo-dot" />
+          <h1>LogStream</h1>
+        </div>
+        <div className="topbar-user">
+          <span className="topbar-status-dot" />
+          Connected
+          <span>|</span>
+          {getUsername()}
+          <button className="logout-btn" onClick={handleLogout}>Logout</button>
+        </div>
       </header>
 
-      <main className="content">
-        <LogGenerator />
-        <AlertsPanel />
-        <LiveTail />
 
-        <section className="chart-section">
-          <h2>Log Volume</h2>
-          <VolumeChart timeSeries={timeSeries} />
-        </section>
+      <div className="dashboard-layout">
+        <div className="dashboard-main">
+          <SearchBar
+            setResults={setResults}
+            setTimeSeries={setTimeSeries}
+            setLoading={setLoading}
+          />
 
-        <section className="results-section">
-          <h2>Results {loading && <span className="loading-spinner"></span>}</h2>
-          <ResultsTable results={results} />
-        </section>
-      </main>
+          <LogGenerator />
+
+          <section className="chart-section">
+            <h2>Log Volume</h2>
+            <VolumeChart timeSeries={timeSeries} />
+          </section>
+
+          <section className="results-section">
+            <h2>Results {loading && <span className="loading-spinner"></span>}</h2>
+            <ResultsTable results={results} />
+          </section>
+        </div>
+
+        <div className="dashboard-side">
+          <AlertsPanel />
+          <LiveTail />
+        </div>
+      </div>
     </div>
   );
 }

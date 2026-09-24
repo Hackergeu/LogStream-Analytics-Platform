@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { saveToken } from '../auth';
+import { saveToken, saveUsername } from '../auth';
 
 function Login({ onLoginSuccess }) {
   const [username, setUsername] = useState('');
@@ -20,6 +20,7 @@ function Login({ onLoginSuccess }) {
 
       const data = await res.json();
       saveToken(data.token);
+      saveUsername(username); // store username so the topbar can display it
       onLoginSuccess();
     } catch (err) {
       setError('Login failed — check your username and password.');
