@@ -1,6 +1,11 @@
 function ResultsTable({ results }) {
   if (results.length === 0) {
-    return <p className="empty-state">No results yet — try a search above.</p>;
+    return (
+      <div className="empty-state">
+        <span className="empty-state-icon">⌁</span>
+        <span className="empty-state-text">No results yet — try a search above.</span>
+      </div>
+    );
   }
 
   return (
@@ -16,9 +21,11 @@ function ResultsTable({ results }) {
       </thead>
       <tbody>
         {results.map((log) => (
-          <tr key={log.log_id} className={`level-${log.level?.toLowerCase()}`}>
+          <tr key={log.log_id}>
             <td>{new Date(Number(log.timestamp)).toLocaleTimeString()}</td>
-            <td>{log.level}</td>
+            <td>
+              <span className={`level-badge ${log.level}`}>{log.level}</span>
+            </td>
             <td>{log.service}</td>
             <td>{log.response_time_ms}</td>
             <td>{log.message}</td>
